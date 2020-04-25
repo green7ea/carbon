@@ -10,7 +10,5 @@ fn main()
         Err(error) => panic!("We ran into a problem: {}", error),
     };
 
-    hosts
-        .iter()
-        .for_each(|host| println!("{}@{}", host.user, host.ip))
+    hosts.for_each(|host| println!("{}@{}", host.user, host.ip))
 }

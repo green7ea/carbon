@@ -28,7 +28,6 @@ fn main()
         Err(error) => panic!("Ran into a problem: {}", error),
     };
     let ip = hosts
-        .iter()
         .filter(|host| host.user == user)
         .nth(0)
         .expect("User not found")

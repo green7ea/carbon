@@ -26,34 +26,51 @@ pub struct Host
     pub ip: IpAddr,
 }
 
-impl Host
+pub struct HostIterator
 {
-    pub fn new(user: String, ip: IpAddr) -> Self
+    socket: UdpSocket,
+    buffer: Vec<u8>,
+}
+
+impl Iterator for HostIterator
+{
+    type Item = Host;
+
+    fn next(&mut self) -> Option<Self::Item>
     {
-        Host {
-            user,
-            ip,
-        }
+        let (amt, src) = match self.socket.recv_from(&mut self.buffer)
+        {
+            Ok(payload) => payload,
+            Err(_) => return None,
+        };
+        let buf = self.buffer.get(0..amt).unwrap();
+
+        let res: Payload = match serde_json::from_slice(&buf)
+        {
+            Ok(payload) => payload,
+            Err(_) => return None,
+        };
+
+        return Some(Host {
+            user: res.user,
+            ip: src.ip(),
+        });
     }
 }
 
-pub fn discover() -> std::io::Result<Vec<Host>>
+pub fn discover() -> std::io::Result<HostIterator>
 {
     let socket = UdpSocket::bind("0.0.0.0:12346")?;
     let broadcast_addr = SocketAddrV4::new(MULTICAST_ADDR, 12345);
+    socket.set_read_timeout(Some(std::time::Duration::from_secs(1)))?;
 
     let user = std::env::var("USER").unwrap_or(String::from("unknown"));
     let payload = serde_json::to_string(&Payload::new(&user))?;
     socket.send_to(payload.as_bytes(), broadcast_addr)?;
 
-    // TODO we want to listen for a given time and list all the
-    // results that came in during that time, not just take the first
-    // result we get.
-
-    let mut buf = [0; 1024];
-    let (amt, src) = socket.recv_from(&mut buf)?;
-    let buf = buf.get(0..amt).unwrap();
-
-    let res: Payload = serde_json::from_slice(&buf).unwrap();
-    Ok(vec![Host::new(res.user, src.ip())])
+    let buffer = vec![0; 4096];
+    Ok(HostIterator {
+        socket,
+        buffer,
+    })
 }
