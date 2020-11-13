@@ -26,6 +26,12 @@ pub struct Host
     pub ip: IpAddr,
 }
 
+impl Host {
+    pub fn to_string(&self) -> String {
+        format!("{}@{}", self.user, self.ip)
+    }
+}
+
 pub struct HostIterator
 {
     socket: UdpSocket,

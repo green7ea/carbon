@@ -1,7 +1,3 @@
-extern crate serde;
-extern crate serde_derive;
-extern crate serde_json;
-
 mod discover;
 
 use discover::Payload;
@@ -10,7 +6,7 @@ use std::{
     net::{Ipv4Addr, Shutdown, TcpListener, TcpStream, UdpSocket},
 };
 
-fn handle_client(mut stream: TcpStream)
+pub fn handle_client(mut stream: TcpStream)
 {
     let mut header = [0 as u8; 2];
     stream.read_exact(&mut header).unwrap();
@@ -41,7 +37,7 @@ fn handle_client(mut stream: TcpStream)
     stream.shutdown(Shutdown::Both).unwrap();
 }
 
-fn receive() -> std::io::Result<()>
+pub fn receive() -> std::io::Result<()>
 {
     let user = std::env::var("USER").unwrap();
     let socket = UdpSocket::bind("0.0.0.0:12345")?;
@@ -74,7 +70,7 @@ fn receive() -> std::io::Result<()>
     */
 }
 
-fn listen_for_files()
+pub fn listen_for_files()
 {
     let listener = TcpListener::bind("0.0.0.0:3333").unwrap();
 

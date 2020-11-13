@@ -9,6 +9,10 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.0"
 serde_derive = "1.0"
 
+[lib]
+name = "carbon"
+crate-type = ["cdylib"]
+
 [[bin]]
 name = "carbon-ls"
 path = "src/ls.rs"
